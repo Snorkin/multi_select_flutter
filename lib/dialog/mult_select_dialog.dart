@@ -78,6 +78,9 @@ class MultiSelectDialog<T> extends StatefulWidget with MultiSelectActions<T> {
   /// Set the color of the check in the checkbox
   final Color? checkColor;
 
+  /// Enable single choice
+  final bool? isSingleSelect;
+
   MultiSelectDialog({
     required this.items,
     required this.initialValue,
@@ -103,6 +106,7 @@ class MultiSelectDialog<T> extends StatefulWidget with MultiSelectActions<T> {
     this.selectedItemsTextStyle,
     this.separateSelectedItems = false,
     this.checkColor,
+    this.isSingleSelect,
   });
 
   @override
@@ -133,6 +137,13 @@ class _MultiSelectDialogState<T> extends State<MultiSelectDialog<T>> {
     }
   }
 
+  uncheckItems(){
+    _items.forEach((item) {
+      item.selected = false;
+    });
+    _selectedValues = [];
+  }
+
   /// Returns a CheckboxListTile
   Widget _buildListItem(MultiSelectItem<T> item) {
     return Theme(
@@ -154,14 +165,28 @@ class _MultiSelectDialogState<T> extends State<MultiSelectDialog<T>> {
         controlAffinity: ListTileControlAffinity.leading,
         onChanged: (checked) {
           setState(() {
+            if (widget.isSingleSelect != null) {
+              if (widget.isSingleSelect!) {
+                if (_selectedValues.length > 0) {
+                  uncheckItems();
+                  // _selectedValues = widget.onItemCheckedChange(
+                  //     _selectedValues, item.value, checked!);
+                  // print(_selectedValues);
+                }
+                // Navigator.pop(context);
+              }
+            }
             _selectedValues = widget.onItemCheckedChange(
                 _selectedValues, item.value, checked!);
+
+            print(_selectedValues);
 
             if (checked) {
               item.selected = true;
             } else {
               item.selected = false;
             }
+
             if (widget.separateSelectedItems) {
               _items = widget.separateSelected(_items);
             }
@@ -176,6 +201,7 @@ class _MultiSelectDialogState<T> extends State<MultiSelectDialog<T>> {
 
   /// Returns a ChoiceChip
   Widget _buildChipItem(MultiSelectItem<T> item) {
+    print(item);
     return Container(
       padding: const EdgeInsets.all(2.0),
       child: ChoiceChip(
@@ -197,11 +223,8 @@ class _MultiSelectDialogState<T> extends State<MultiSelectDialog<T>> {
         ),
         selected: item.selected,
         onSelected: (checked) {
-          if (checked) {
-            item.selected = true;
-          } else {
-            item.selected = false;
-          }
+          print(checked);
+          item.selected = checked;
           setState(() {
             _selectedValues = widget.onItemCheckedChange(
                 _selectedValues, item.value, checked);
